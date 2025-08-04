@@ -42,27 +42,28 @@ public class DrawService implements IDrawService {
     //get the winnersId from Ai
     //credit each winner by looping though their id
     @Transactional
+    @Override
     public List<Transactions> giveaway(UUID donorAccountId, BigDecimal amountPerUser, String note, @ModelAttribute CriteriaParams params) {
         log.info("In giveaway method in the draw service class!");
         List<UUID> getWinnersId;
         getWinnersId = getWinnersIdFromAI(params);
         log.debug("AI returned winners ID: {}", getWinnersId.toString());
 
-        Account donorAccount = accountRepository.findById(donorAccountId)
-                .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", donorAccountId)));
+        Account donorAccount = getDonorAccount(donorAccountId);
 
+        //to store transaction performed for each user
         List<Transactions> allTransaction = new ArrayList<>();
 
+        //iterate through the winners IDs
+        //get the winners accounts
+        //perform transaction for each winner
+        // add the transaction to the allTransaction list
+        //--- get the user who won from his account
+        //--- increment his draw count and record the draw time
         for (UUID winnerId : getWinnersId) {
-            Account winnerAccount = accountRepository.findByUserId(winnerId)
-                    .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", winnerId)));
+            Account winnerAccount = getWinnerAccount(winnerId);
 
-            CreateTransactionRequest request = CreateTransactionRequest.builder()
-                    .sourceAccountId(donorAccount)
-                    .destinationAccountId(winnerAccount)
-                    .amount(amountPerUser)
-                    .note(note)
-                    .build();
+            CreateTransactionRequest request = buildTransactionRequest(donorAccount,winnerAccount,amountPerUser,note);
 
             Transactions transaction = transactionService.initiateTransaction(request);
             allTransaction.add(transaction);
@@ -72,6 +73,25 @@ public class DrawService implements IDrawService {
         }
 
         return allTransaction;
+    }
+
+    private CreateTransactionRequest buildTransactionRequest(Account donorAccount, Account winnerAccount, BigDecimal amountPerUser, String note){
+        return CreateTransactionRequest.builder()
+                .sourceAccountId(donorAccount)
+                .destinationAccountId(winnerAccount)
+                .amount(amountPerUser)
+                .note(note)
+                .build();
+    }
+
+    private Account getDonorAccount(UUID donorAccountId){
+        return accountRepository.findById(donorAccountId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", donorAccountId)));
+    }
+
+    private Account getWinnerAccount(UUID winnerAccountId){
+        return accountRepository.findByUserId(winnerAccountId)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", winnerAccountId)));
     }
 
     private void incrementUsersDrawParams(Users winner){
