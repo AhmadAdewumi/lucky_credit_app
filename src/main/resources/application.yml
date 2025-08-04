@@ -1,0 +1,45 @@
+#spring.application.name=lucky_credit_app
+spring:
+
+  application:
+    name: lucky_credit_app
+
+  ai:
+    openai:
+      api-key: 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
+      base-url: https://openrouter.ai/api
+      chat:
+        options:
+          model: mistralai/mistral-small-3.2-24b-instruct:free
+
+  flyway:
+    url: jdbc:postgresql://localhost:5432/lucky_credit_app
+    schemas: lucky_credit_app
+    user: postgres
+    password: 2006Ahmad.
+    locations: classpath:db/migration
+    enabled: true
+    driver-class-name: org.postgresql.Driver
+    clean-disabled: false
+  #    baseline-on-migrate: true
+
+
+  jpa:
+    hibernate:
+      ddl-auto: none
+    show-sql: true
+    properties:
+      default_schema: lucky_credit_app
+      format_sql: true
+
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/lucky_credit_app
+    username: postgres
+    password: 2006Ahmad.
+    driver-class-name: org.postgresql.Driver
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE

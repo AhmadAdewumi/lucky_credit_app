@@ -1,0 +1,3 @@
+ALTER TABLE users ADD COLUMN times_drawn SMALLINT;
+
+ALTER TABLE users ADD COLUMN last_draw_date TIMESTAMP DEFAULT now();
