@@ -1,17 +1,19 @@
 package com.ahmad.lucky_credit_app.service.account;
 
 import com.ahmad.lucky_credit_app.dto.request.CreateAccountRequest;
-import com.ahmad.lucky_credit_app.globalExceptionHandling.ResourceNotFoundException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.ResourceNotFoundException;
 import com.ahmad.lucky_credit_app.model.Account;
 import com.ahmad.lucky_credit_app.model.Users;
 import com.ahmad.lucky_credit_app.repository.AccountRepository;
 import com.ahmad.lucky_credit_app.repository.UserRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 public class AccountService implements IAccountService {
     private final AccountRepository accountRepository;
@@ -22,7 +24,7 @@ public class AccountService implements IAccountService {
         this.userRepository = userRepository;
     }
 
-    private String generateAccountNumber() {
+    String generateAccountNumber() {
         return UUID.randomUUID().toString().replace("-", "").toUpperCase();
     }
 
@@ -37,9 +39,9 @@ public class AccountService implements IAccountService {
         account.setBalance(request.getBalance());
         account.setCreatedAt(LocalDateTime.now());
         account.setUser(user);
-        account.setCreatedAt(LocalDateTime.now());
 
         accountRepository.save(account);
+        log.info("Account created for user: {} with Account number : {} successfully!", user.getRealName(), account.getAccountNumber());
         return account;
     }
 
@@ -58,6 +60,10 @@ public class AccountService implements IAccountService {
         return accountRepository.findByAccountNumber(accountNumber)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with account number: %s Not Found!", accountNumber)));
     }
+//
+//    public Account findById(UUID accountId){
+//
+//    }
 
     @Override
     public List<Account> listAllAccounts() {

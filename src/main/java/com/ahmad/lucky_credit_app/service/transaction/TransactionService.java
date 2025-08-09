@@ -2,7 +2,7 @@ package com.ahmad.lucky_credit_app.service.transaction;
 
 import com.ahmad.lucky_credit_app.dto.request.CreateTransactionRequest;
 import com.ahmad.lucky_credit_app.enums.TransStatus;
-import com.ahmad.lucky_credit_app.globalExceptionHandling.ResourceNotFoundException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.ResourceNotFoundException;
 import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.InsufficientFundException;
 import com.ahmad.lucky_credit_app.model.Account;
 import com.ahmad.lucky_credit_app.model.Transactions;
@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.Random;
 import java.util.UUID;
 
 @Service

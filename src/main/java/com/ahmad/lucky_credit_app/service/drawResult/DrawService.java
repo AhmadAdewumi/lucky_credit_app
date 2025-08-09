@@ -2,10 +2,12 @@ package com.ahmad.lucky_credit_app.service.drawResult;
 
 import com.ahmad.lucky_credit_app.dto.request.CreateTransactionRequest;
 import com.ahmad.lucky_credit_app.dto.request.CriteriaParams;
-import com.ahmad.lucky_credit_app.globalExceptionHandling.ResourceNotFoundException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.ResourceNotFoundException;
 import com.ahmad.lucky_credit_app.model.Account;
 import com.ahmad.lucky_credit_app.model.Transactions;
 import com.ahmad.lucky_credit_app.model.Users;
+import com.ahmad.lucky_credit_app.paymentGateway.dto.request.InitializePaymentRequest;
+import com.ahmad.lucky_credit_app.paymentGateway.service.PaystackService;
 import com.ahmad.lucky_credit_app.repository.AccountRepository;
 import com.ahmad.lucky_credit_app.repository.UserRepository;
 import com.ahmad.lucky_credit_app.service.transaction.TransactionService;
@@ -31,19 +33,22 @@ public class DrawService implements IDrawService {
     private final UserRepository userRepository;
     private final TransactionService transactionService;
     private final AccountRepository accountRepository;
+    private final PaystackService paystackService;
 
-    public DrawService(ChatModel chatModel, UserRepository userRepository, TransactionService transactionService, AccountRepository accountRepository) {
+    public DrawService(ChatModel chatModel, UserRepository userRepository, TransactionService transactionService, AccountRepository accountRepository, PaystackService paystackService) {
         this.chatModel = chatModel;
         this.userRepository = userRepository;
         this.transactionService = transactionService;
         this.accountRepository = accountRepository;
+        this.paystackService = paystackService;
     }
 
     //get the winnersId from Ai
     //credit each winner by looping though their id
     @Transactional
     @Override
-    public List<Transactions> giveaway(UUID donorAccountId, BigDecimal amountPerUser, String note, @ModelAttribute CriteriaParams params) {
+    public List<Transactions> giveaway(UUID donorAccountId, BigDecimal amountPerUser,
+                                       String note, @ModelAttribute CriteriaParams params) {
         log.info("In giveaway method in the draw service class!");
         List<UUID> getWinnersId;
         getWinnersId = getWinnersIdFromAI(params);
@@ -51,6 +56,33 @@ public class DrawService implements IDrawService {
 
         Account donorAccount = getDonorAccount(donorAccountId);
 
+        return performTransaction(getWinnersId, donorAccount, amountPerUser, note);
+    }
+
+    @Transactional
+    public List<Transactions> giveawayUsingPaystack(String email,
+                                                    BigDecimal amountPerUser,
+                                                    String note, @ModelAttribute CriteriaParams params) {
+        InitializePaymentRequest request = new InitializePaymentRequest();
+        request.setEmail(email);
+        request.setAmount(amountPerUser);
+
+        paystackService.initializePayment(request);
+
+        List<UUID> getWinnersId;
+        getWinnersId = getWinnersIdFromAI(params);
+
+        Account donorAccount = getDonorAccount(getUserByEmail(email).getAccountId().getId());
+
+        return performTransaction(getWinnersId, donorAccount, amountPerUser, note);
+    }
+
+    private Users getUserByEmail(String email) {
+        return userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException(String.format("User with email: %s, Not Found!", email)));
+    }
+
+    private List<Transactions> performTransaction(List<UUID> getWinnersId, Account donorAccount, BigDecimal amountPerUser, String note) {
         //to store transaction performed for each user
         List<Transactions> allTransaction = new ArrayList<>();
 
@@ -63,7 +95,7 @@ public class DrawService implements IDrawService {
         for (UUID winnerId : getWinnersId) {
             Account winnerAccount = getWinnerAccount(winnerId);
 
-            CreateTransactionRequest request = buildTransactionRequest(donorAccount,winnerAccount,amountPerUser,note);
+            CreateTransactionRequest request = buildTransactionRequest(donorAccount, winnerAccount, amountPerUser, note);
 
             Transactions transaction = transactionService.initiateTransaction(request);
             allTransaction.add(transaction);
@@ -71,11 +103,10 @@ public class DrawService implements IDrawService {
             Users winner = winnerAccount.getUser();
             incrementUsersDrawParams(winner);
         }
-
         return allTransaction;
     }
 
-    private CreateTransactionRequest buildTransactionRequest(Account donorAccount, Account winnerAccount, BigDecimal amountPerUser, String note){
+    private CreateTransactionRequest buildTransactionRequest(Account donorAccount, Account winnerAccount, BigDecimal amountPerUser, String note) {
         return CreateTransactionRequest.builder()
                 .sourceAccountId(donorAccount)
                 .destinationAccountId(winnerAccount)
@@ -84,17 +115,17 @@ public class DrawService implements IDrawService {
                 .build();
     }
 
-    private Account getDonorAccount(UUID donorAccountId){
+    private Account getDonorAccount(UUID donorAccountId) {
         return accountRepository.findById(donorAccountId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", donorAccountId)));
     }
 
-    private Account getWinnerAccount(UUID winnerAccountId){
+    private Account getWinnerAccount(UUID winnerAccountId) {
         return accountRepository.findByUserId(winnerAccountId)
                 .orElseThrow(() -> new ResourceNotFoundException(String.format("Account with ID: %s NOT FOUND!", winnerAccountId)));
     }
 
-    private void incrementUsersDrawParams(Users winner){
+    private void incrementUsersDrawParams(Users winner) {
         winner.setTimesDrawn(winner.getTimesDrawn() + 1);
         winner.setLast_draw_time(LocalDateTime.now());
         userRepository.save(winner);
@@ -179,7 +210,7 @@ public class DrawService implements IDrawService {
         return prompt.toString();
     }
 
-    private String cleanAiResponse(String aiResponse){
+    private String cleanAiResponse(String aiResponse) {
         String cleanedResponse = aiResponse
                 .replaceAll("`", "")
                 .replaceAll("(?s)^.*?(\\[)", "$1")

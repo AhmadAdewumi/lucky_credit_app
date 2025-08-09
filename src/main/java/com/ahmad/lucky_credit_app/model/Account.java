@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -46,4 +47,16 @@ public class Account {
     private List<Transactions> transactions = new ArrayList<>();
 
     private LocalDateTime createdAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Account account = (Account) o;
+        return Objects.equals(id, account.id) && Objects.equals(accountNumber, account.accountNumber) && accountType == account.accountType && accountStatus == account.accountStatus && Objects.equals(balance, account.balance) && Objects.equals(user, account.user);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, accountNumber, accountType, accountStatus, balance, user);
+    }
 }

@@ -1,7 +1,8 @@
 package com.ahmad.lucky_credit_app.service.users;
 
 import com.ahmad.lucky_credit_app.dto.request.CreateUserRequest;
-import com.ahmad.lucky_credit_app.globalExceptionHandling.ResourceNotFoundException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.AlreadyExistsException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.ResourceNotFoundException;
 import com.ahmad.lucky_credit_app.model.Users;
 import com.ahmad.lucky_credit_app.repository.UserRepository;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +24,9 @@ public class UserService implements IUserService {
     @Override
     public Users registerUser(CreateUserRequest request) {
         log.info("Attempting to create User with attributes {}", request.toString());
+        if (userRepository.existsByEmail(request.getEmail())){
+            throw new AlreadyExistsException(String.format("User with Email %s, already exists",request.getEmail()));
+        }
         Users user = new Users();
         user.setUsername(request.getUsername());
         user.setEmail(request.getEmail());

@@ -6,7 +6,7 @@ spring:
 
   ai:
     openai:
-      api-key: ${API_KEY}
+      api-key: ${OPEN_ROUTER_API_KEY}
       base-url: https://openrouter.ai/api
       chat:
         options:
@@ -43,3 +43,7 @@ logging:
   level:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+
+paystack:
+  secret:
+    key: ${PAYSTACK_SECRET_KEY}

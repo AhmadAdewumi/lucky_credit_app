@@ -12,6 +12,8 @@ A backend API that powers **smart, controlled donation distribution**. It lets d
 - **Rank and randomize recipients intelligently** for fair and diverse selection (Something like a score ranking system used in dating apps/job platforms
 - **AI-powered Filtering** Recipients are selected automatically based on request criteria.
 - **Track transactions**, with note and donor reference
+- **Integrate with Paystack**, payment gateway for real-money donations
+- Verify and confirm payments after giveaways
 - **Manual + fake data seeding** on startup
 
 ---
@@ -31,7 +33,7 @@ A backend API that powers **smart, controlled donation distribution**. It lets d
   "occupation": "Software Engineer",
   "gender": "MALE",
   "nationality": "Nigerian",
-  "description": "Junior Java dev with a knack for problm solving",
+  "description": "Junior Java dev with a knack for problem solving",
   "height_in_cm": 180.5,
   "maritalStatus": "SINGLE",
   "familySize": 68,
@@ -69,6 +71,31 @@ Links a account to a user. Needed for donating or receiving funds.
   "minSiblingsCount": 1,
   "maxSiblingsCount": 4,
   "userCount": 2
+}
+```
+### Verify Payment
+
+**POST** `/api/payment/{reference}/verify?email={email}`
+
+- Verifies the status of a Paystack payment using the payment reference and user email.
+- Only verified successful payments allow giveaways to proceed.
+
+**Sample Response**
+
+```json
+{
+  "message": "Transaction verified for user with mail: muhammadali@gmail.com",
+  "data": {
+    "status": true,
+    "message": "Verification successful",
+    "data": {
+      "status": "abandoned",
+      "reference": "c805a2e5-0833-4730-b54d-d0d9d0c62510",
+      "amount": 50000,
+      "gateway_response": "The transaction was not completed",
+      "created_at": "2025-08-09T00:28:24"
+    }
+  }
 }
 ```
 
@@ -112,5 +139,6 @@ public class DataLoader { ... }
 - No authentication added yet.
 - Use Postman or cURL to test all endpoints.
 - All monetary transfers and account operations are transactional and traceable (Future implementation).
+- Paystack integration handles real-money donations and verification
 
 ---

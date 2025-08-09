@@ -45,6 +45,10 @@ public interface UserRepository extends JpaRepository<Users, UUID> {
             @Param("max_siblings_count") Integer max_siblings_count,
             @Param("user_count") int user_count
     );
+
+    boolean existsByEmail(@NotNull String email);
+
+    Optional<Users> findByEmail(@NotNull String email);
 }
 
 //SELECT *,

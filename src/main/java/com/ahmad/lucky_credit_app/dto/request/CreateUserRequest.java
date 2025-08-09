@@ -5,11 +5,15 @@ import com.ahmad.lucky_credit_app.enums.MarriageStatus;
 import com.ahmad.lucky_credit_app.enums.SkinColor;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class CreateUserRequest {
+    private UUID uuid;
+
     private String username;
 
     private String realName;
@@ -35,4 +39,28 @@ public class CreateUserRequest {
     private int siblingsCount;
 
     private SkinColor skinColor;
+
+    public CreateUserRequest(String username, String realName,
+                             String email, String phoneNumber,
+                             String occupation, Gender gender,
+                             String nationality, String description,
+                             double height_in_cm, MarriageStatus maritalStatus,
+                             int familySize, int siblingsCount, SkinColor skinColor) {
+        this.username = username;
+        this.realName = realName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.occupation = occupation;
+        this.gender = gender;
+        this.nationality = nationality;
+        this.description = description;
+        this.height_in_cm = height_in_cm;
+        this.maritalStatus = maritalStatus;
+        this.familySize = familySize;
+        this.siblingsCount = siblingsCount;
+        this.skinColor = skinColor;
+    }
+
 }
+
+

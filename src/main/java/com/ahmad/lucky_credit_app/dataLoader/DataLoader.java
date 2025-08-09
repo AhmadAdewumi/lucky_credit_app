@@ -27,7 +27,7 @@ public class DataLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
-        for (int i = 0; i < 500; i++) {
+        for (int i = 0; i < 50; i++) {
             Users user = new Users();
             user.setUsername(limit(faker.name().username()));
             user.setRealName(limit(faker.name().fullName()));
@@ -59,7 +59,7 @@ public class DataLoader implements CommandLineRunner {
 
     private String limit(String value) {
         if (value == null) return null;
-        return value.length() > 20 ? value.substring(0, 20) : value;
+        return value.length() > 150 ? value.substring(0, 150) : value;
     }
 
     private SkinColor generateColors() {

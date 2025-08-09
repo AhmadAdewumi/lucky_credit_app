@@ -10,6 +10,7 @@ import lombok.Setter;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Objects;
 import java.util.UUID;
 
 @Entity
@@ -45,4 +46,16 @@ public class Transactions {
     private LocalDateTime createdAt;
 
     private LocalDateTime updatedAt;
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        Transactions that = (Transactions) o;
+        return Objects.equals(id, that.id) && Objects.equals(reference, that.reference) && Objects.equals(amount, that.amount) && transactionStatus == that.transactionStatus && Objects.equals(sourceAccount, that.sourceAccount) && Objects.equals(destinationAccount, that.destinationAccount) && Objects.equals(note, that.note);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id, reference, amount, transactionStatus, sourceAccount, destinationAccount, note);
+    }
 }

@@ -1,7 +1,10 @@
 package com.ahmad.lucky_credit_app.globalExceptionHandling;
 
 import com.ahmad.lucky_credit_app.dto.response.ApiErrorResponse;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.AlreadyExistsException;
 import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.InsufficientFundException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.PaystackInitializationException;
+import com.ahmad.lucky_credit_app.globalExceptionHandling.exceptions.ResourceNotFoundException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +25,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler({
             ResourceNotFoundException.class,
-            AlreadyExistsException.class
+            AlreadyExistsException.class,
+            InsufficientFundException.class,
+            PaystackInitializationException.class
     })
     public ResponseEntity<ApiErrorResponse> handleAllExceptions(Exception exception, HttpServletRequest request){
         HttpStatus status = determineHttpStatus(exception);
@@ -47,6 +52,9 @@ public class GlobalExceptionHandler {
         }
         if (exception instanceof  AlreadyExistsException){
             return HttpStatus.CONFLICT;
+        }
+        if (exception instanceof PaystackInitializationException){
+            return HttpStatus.BAD_REQUEST;
         }
 
         //fallback
